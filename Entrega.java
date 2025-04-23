@@ -50,7 +50,9 @@ import java.util.stream.IntStream;
  * de texte estigui configurat amb codificació UTF-8.
  */
 class Entrega {
-  static final String[] NOMS = {};
+  static final String[] NOMS = {
+          "José Javier Morales Caravaca"
+  };
 
   /*
    * Aquí teniu els exercicis del Tema 1 (Lògica).
@@ -80,7 +82,75 @@ class Entrega {
     static final char NAND = '.';
 
     static int exercici1(char[] ops, int[] vars) {
-      throw new UnsupportedOperationException("pendent");
+      int varsUnicas = 0;
+      ArrayList<Integer> varsEncontradas = new ArrayList<>();
+      for (int var :vars) {
+        if(!varsEncontradas.contains(var)) {
+          varsEncontradas.add(var);
+        }
+      }
+      varsUnicas = varsEncontradas.size();
+
+      boolean [][] tablaVerdad = new boolean [pow2(varsUnicas)][varsUnicas];
+      for (int columna = 0; columna < varsUnicas; columna++) {
+        int repeticiones = 0;
+        boolean dato = false;
+        for (int fila = 0; fila < pow2(varsUnicas); fila++) {
+          tablaVerdad[fila][columna] = dato;
+          repeticiones++;
+          if(repeticiones == pow2(columna)) {
+            dato = !dato;
+            repeticiones = 0;
+          }
+        }
+      }
+      //Por cada fila de la tabla de verdad, calcula su valor de la expresión correspondiente
+      // y almacena el resultado en una array de valores
+      boolean[] valores = new boolean[pow2(varsUnicas)];
+      for (int f = 0 ; f < tablaVerdad.length ; f++) {
+        boolean[] fila = tablaVerdad[f];
+        boolean valorAnterior = calcularExpresion(fila[vars[0]], ops[0], fila[vars[1]]);
+        for (int i = 2; i < vars.length; i++){
+          valorAnterior = calcularExpresion(valorAnterior, ops[i-1], fila[vars[i]]);
+        }
+        valores[f] = valorAnterior;
+      }
+
+      //Si
+      boolean primerValor = valores[0];
+      for (boolean valor : valores) {
+        if(valor != primerValor) {
+          return -1;
+        }
+      }
+      return primerValor ? 1 : 0;
+    }
+
+    //Calcular la expresión lógica var1 op var2 (el orden es únicamente relevante para la implicación)
+    static boolean calcularExpresion(boolean var1, char op, boolean var2){
+
+      switch(op) {
+        case CONJ:
+          return var1 && var2;
+        case DISJ:
+          return var1 || var2;
+        case NAND:
+          return !(var1 && var2);
+        case IMPL:
+          return !var1 || var2; // Utilizando la expresión equivalente a la implicación
+        default:
+          return false;
+          //Nunca se debería llegar al caso default, pero Java exige que se añada un return por defecto
+      }
+    }
+
+    //Calcula 2^n
+    static int pow2(int n){
+      int p = 1;
+      for(int i = 1; i <= n; i++){
+        p*=2;
+      }
+      return p;
     }
 
     /*
@@ -94,7 +164,24 @@ class Entrega {
      * (∀x : P(x)) <-> (∃!x : Q(x))
      */
     static boolean exercici2(int[] universe, Predicate<Integer> p, Predicate<Integer> q) {
-      throw new UnsupportedOperationException("pendent");
+      boolean resultado1 = true;
+      for(int x : universe) {
+        if(!p.test(x)) {
+          resultado1 = false;
+        }
+      }
+
+      boolean resultado2 = false;
+      for(int x : universe) {
+        if(q.test(x)) {
+          if (resultado2){
+            resultado2 = false;
+            break;
+          }
+          resultado2 = true;
+        }
+      }
+      return resultado1 == resultado2;
     }
 
     static void tests() {
@@ -106,6 +193,12 @@ class Entrega {
 
       // Contradicció: (p0 . p0) ∧ p0
       test(1, 1, 2, () -> exercici1(new char[] { NAND, CONJ }, new int[] { 0, 0, 0 }) == 0);
+
+      //Modus Ponens: ((p0 → p1) ^ p0) → p1
+      test(1, 1, 3, () -> exercici1(new char[] { IMPL, CONJ, IMPL }, new int[] { 0, 1, 0, 1 }) == 1);
+
+      //Indeterminación: p0 → p1
+      test(1, 1, 4, () -> exercici1(new char[] { IMPL }, new int[] { 0, 1}) == -1);
 
       // Exercici 2
       // Equivalència
