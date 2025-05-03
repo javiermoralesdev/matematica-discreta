@@ -241,7 +241,21 @@ class Entrega {
      * Pista: Cercau informació sobre els nombres de Stirling.
      */
     static int exercici1(int[] a) {
-      throw new UnsupportedOperationException("pendent");
+      int total = 0;
+      for (int k = 1; k <= a.length; k++) {
+        total += stirling(a.length, k);
+      }
+      return total;
+    }
+
+    static int stirling(int n, int k){
+      if (n == k){
+        return 1;
+      }else if (n==0 || k==0 || n<k) {
+        return 0;
+      } else{
+        return stirling(n-1, k-1) + k * stirling(n-1, k);
+      }
     }
 
     /*
@@ -252,7 +266,45 @@ class Entrega {
      * Si no existeix, retornau -1.
      */
     static int exercici2(int[] a, int[][] rel) {
-      throw new UnsupportedOperationException("pendent");
+        //Clausura reflexiva
+      int reflex = 0;
+      for(int x : a){
+        if (!contiene(rel, new int[]{x, x})){
+          reflex++;
+        }
+      }
+
+      //Clausura antisimétrica
+      for(int x : a){
+        for(int y : a){
+          if(contiene(rel, new int[]{x, y}) && contiene(rel, new int[]{y, x}) && x != y){
+            return -1;
+          }
+        }
+      }
+
+      //Clausura transitiva
+      int transitiva = 0;
+      for(int x : a){
+        for(int y : a){
+          for (int z : a){
+            if(contiene(rel, new int[]{x, y}) && contiene(rel, new int[]{y, z}) && !contiene(rel, new int[]{x, z})){
+              transitiva++;
+            }
+          }
+        }
+      }
+
+      return reflex + rel.length + transitiva;
+    }
+
+    static boolean contiene(int[][] rel, int [] x){
+      for (int[] elemento : rel) {
+        if(Arrays.equals(x, elemento)){
+          return true;
+        }
+      }
+      return false;
     }
 
     /*
