@@ -1,13 +1,9 @@
-import java.lang.AssertionError;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 /*
  * Aquesta entrega consisteix en implementar tots els mètodes anomenats "exerciciX". Ara mateix la
@@ -269,7 +265,7 @@ class Entrega {
         //Clausura reflexiva
       int reflex = 0;
       for(int x : a){
-        if (!contiene(rel, new int[]{x, x})){
+        if (!contieneEnRelacion(rel, new int[]{x, x})){
           reflex++;
         }
       }
@@ -277,7 +273,7 @@ class Entrega {
       //Clausura antisimétrica
       for(int x : a){
         for(int y : a){
-          if(contiene(rel, new int[]{x, y}) && contiene(rel, new int[]{y, x}) && x != y){
+          if(contieneEnRelacion(rel, new int[]{x, y}) && contieneEnRelacion(rel, new int[]{y, x}) && x != y){
             return -1;
           }
         }
@@ -288,7 +284,7 @@ class Entrega {
       for(int x : a){
         for(int y : a){
           for (int z : a){
-            if(contiene(rel, new int[]{x, y}) && contiene(rel, new int[]{y, z}) && !contiene(rel, new int[]{x, z})){
+            if(contieneEnRelacion(rel, new int[]{x, y}) && contieneEnRelacion(rel, new int[]{y, z}) && !contieneEnRelacion(rel, new int[]{x, z})){
               transitiva++;
             }
           }
@@ -298,9 +294,18 @@ class Entrega {
       return reflex + rel.length + transitiva;
     }
 
-    static boolean contiene(int[][] rel, int [] x){
+    static boolean contieneEnRelacion(int[][] rel, int [] x){
       for (int[] elemento : rel) {
         if(Arrays.equals(x, elemento)){
+          return true;
+        }
+      }
+      return false;
+    }
+
+    static boolean contieneEnArray(int x, int[] a){
+      for(int y : a){
+        if(x == y){
           return true;
         }
       }
@@ -315,7 +320,77 @@ class Entrega {
      * - null en qualsevol altre cas
      */
     static Integer exercici3(int[] a, int[][] rel, int[] x, boolean op) {
-      throw new UnsupportedOperationException("pendent");
+      return op ? findSuprem(a, rel, x): findInfim(a, rel, x);
+    }
+
+    static Integer findInfim(int[] a, int[][] rel, int[] x){
+      ArrayList<Integer> cotaInferior = new ArrayList<>();
+      for(int n: a){
+        int relacionados = 0;
+        for(int y: x){
+          if(contieneEnRelacion(rel, new int[]{n, y}) && !contieneEnArray(n, x)){
+            relacionados++;
+          }
+        }
+        if(relacionados == x.length && !contieneEnArray(n, x)){
+          cotaInferior.add(n);
+        }
+      }
+      if(cotaInferior.size() == 1){
+        return cotaInferior.getFirst();
+      }
+
+      if(cotaInferior.isEmpty()){
+        return null;
+      }
+      for(int n: cotaInferior){
+        int relacionados = 0;
+        for(int y: cotaInferior){
+          if (contieneEnRelacion(rel, new int[]{y, n}) && n != y){
+            relacionados++;
+          }
+        }
+        if(relacionados ==  cotaInferior.size() -1){
+          return n;
+        }
+      }
+      return null;
+    }
+
+    static Integer findSuprem(int[] a, int[][] rel, int[] x){
+      ArrayList<Integer> cotaSuperior = new ArrayList<>();
+      for(int n: a){
+        int relacionados = 0;
+        for(int y: x){
+          if(contieneEnRelacion(rel, new int[]{y, n}) && !contieneEnArray(n, x)){
+            relacionados++;
+          }
+        }
+        if(relacionados == x.length && !contieneEnArray(n, x)){
+          cotaSuperior.add(n);
+        }
+      }
+      if(cotaSuperior.isEmpty()){
+        return null;
+      }
+
+      if(cotaSuperior.size() == 1){
+        return cotaSuperior.getFirst();
+      }
+
+      for(int n: cotaSuperior){
+        int relacionados = 0;
+        for(int y: cotaSuperior){
+          if (contieneEnRelacion(rel, new int[]{n, y}) && n != y){
+            relacionados++;
+          }
+        }
+        if(relacionados ==  cotaSuperior.size() -1){
+          return n;
+        }
+      }
+
+      return null;
     }
 
     /*
@@ -354,8 +429,17 @@ class Entrega {
       final int[][] DIV15 = generateRel(INT15, (n, m) -> m % n == 0);
       final Integer ONE = 1;
 
+      final int[] INT_TEST3 = {2, 3, 4, 9, 12, 18};
+      final int[][] DIV_TEST3 = generateRel(INT_TEST3, (n, m) -> m % n == 0);
+
+      final int[] INT_TEST4 = {2, 3, 4, 9, 12, 18, 36};
+      final int[][] DIV_TEST4 = generateRel(INT_TEST4, (n, m) -> m % n == 0);
+      final Integer TWELVE = 12;
+
       test(2, 3, 1, () -> ONE.equals(exercici3(INT15, DIV15, new int[] { 2, 3 }, false)));
       test(2, 3, 2, () -> exercici3(INT15, DIV15, new int[] { 2, 3 }, true) == null);
+      test(2, 3, 3, () ->  exercici3(INT_TEST3, DIV_TEST3, new int[] { 4, 9 }, false) == null);
+      test(2, 3, 4, () -> TWELVE.equals(exercici3(INT_TEST4, DIV_TEST4, new int[] { 3, 4 }, true)));
 
       // Exercici 4
       // Inverses
