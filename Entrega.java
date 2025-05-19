@@ -546,7 +546,21 @@ class Entrega {
      * Determinau si el graf `g` (no dirigit) té cicles.
      */
     static boolean exercici1(int[][] g) {
-      throw new UnsupportedOperationException("pendent");
+      return tieneCiclos(g);
+    }
+
+    static boolean tieneCiclos(int [][] g){
+      int aristas = getAristas(g);
+      int vertices = g.length;
+      return aristas >= vertices;
+    }
+
+    static int getAristas(int [][] g){
+      int sumatorioGrafos = 0;
+      for(int[] veins : g){
+        sumatorioGrafos += veins.length;
+      }
+      return sumatorioGrafos/2;
     }
 
     /*
@@ -565,7 +579,10 @@ class Entrega {
      * vèrtex.
      */
     static int[] exercici3(int[][] g, int r) {
-      throw new UnsupportedOperationException("pendent");
+      if (tieneCiclos(g)){
+        return null;
+      }
+      return null;
     }
 
     /*
