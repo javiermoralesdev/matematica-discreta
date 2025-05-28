@@ -401,7 +401,64 @@ class Entrega {
      *  - Sinó, null.
      */
     static int[][] exercici4(int[] a, int[] b, Function<Integer, Integer> f) {
-      throw new UnsupportedOperationException("pendent");
+
+//      if (esBiyectiva(a, b, f)) {
+//
+//        int[][] res = new int[a.length][2];
+//        for (int i = 0; i < a.length; i++) {
+//          int x = a[i];
+//          res[i] = new int[]{f.apply(x), x};
+//        }
+//        return res;
+//      }
+
+      if (esInyectiva(a, b, f)) {
+
+        int[][] res = new int[a.length][2];
+        for (int i = 0; i < a.length; i++) {
+          int x = a[i];
+          res[i] = new int[]{f.apply(x), x};
+          System.out.println(res[i][0] + " " + res[i][1]);
+        }
+        return res;
+      }
+
+      if (esExhaustiva(a, b, f)) {
+        int[][] res = new int[b.length][2];
+        for (int i = 0; i < b.length; i++) {
+          int x = a[i];
+          res[i] = new int[]{f.apply(x), x};
+        }
+        return res;
+      }
+
+      return null;
+    }
+
+    static boolean esInyectiva(int[] a, int[] b, Function<Integer, Integer> f){
+      ArrayList<Integer> imagenes = new ArrayList<>();
+      for(int x : a){
+        if (imagenes.contains(f.apply(x))){
+          return false;
+        }
+        imagenes.add(x);
+      }
+      return true;
+    }
+
+    static boolean esExhaustiva(int[] a, int[] b, Function<Integer, Integer> f){
+      ArrayList<Integer> imagenes = new ArrayList<>();
+      for(int x : a){
+        if(!imagenes.contains(f.apply(x))){
+          imagenes.add(f.apply(x));
+        }
+      }
+      return imagenes.size() == b.length;
+    }
+
+    static boolean esBiyectiva(int[] a, int[] b, Function<Integer, Integer> f){
+      return esInyectiva(a, b, f) && esExhaustiva(a, b, f);
+
     }
 
     /*
@@ -568,7 +625,56 @@ class Entrega {
      * 10.
      */
     static boolean exercici2(int[][] g1, int[][] g2) {
-      throw new UnsupportedOperationException("pendent");
+      int[][] m1 = getMatrizAdyacencia(g1);
+      int[][] m2 = getMatrizAdyacencia(g2);
+      int n = m1.length;
+      if (m2.length != n || m1[0].length != m2[0].length) return false;
+
+      ArrayList<Integer> nodos = new ArrayList<>();
+      for (int i = 0; i < n; i++) nodos.add(i);
+
+      return probarPermutaciones(nodos, 0, m1, m2);
+    }
+
+    static int [][] getMatrizAdyacencia(int [][] g){
+      int [][] m = new int[g.length][g.length];
+      for (int i = 0; i < g.length; i++) {
+        for (int j : g[i]) {
+          m[i][j] = 1;
+        }
+      }
+      return m;
+    }
+
+    private static boolean probarPermutaciones(ArrayList<Integer> perm, int index, int[][] g1, int[][] g2) {
+      if (index == perm.size()) {
+        if (compararConPermutacion(g1, g2, perm)) return true;
+        return false;
+      }
+
+      for (int i = index; i < perm.size(); i++) {
+        intercambiar(perm, index, i);
+        if (probarPermutaciones(perm, index + 1, g1, g2)) return true;
+        intercambiar(perm, index, i);
+      }
+
+      return false;
+    }
+
+    private static void intercambiar(ArrayList<Integer> lista, int i, int j) {
+      int temp = lista.get(i);
+      lista.set(i, lista.get(j));
+      lista.set(j, temp);
+    }
+
+    private static boolean compararConPermutacion(int[][] g1, int[][] g2, ArrayList<Integer> perm) {
+      int n = g1.length;
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          if (g1[i][j] != g2[perm.get(i)][perm.get(j)]) return false;
+        }
+      }
+      return true;
     }
 
     /*
@@ -582,7 +688,29 @@ class Entrega {
       if (tieneCiclos(g)){
         return null;
       }
-      return null;
+      int [][] m = getMatrizAdyacencia(g);
+      ArrayList<Integer> lista = new ArrayList<>();
+      boolean[] visitado = new boolean[m.length];
+      recorrerArbol(m, r, visitado, lista);
+
+      // Convertir ArrayList a int[]
+      int[] resultado = new int[lista.size()];
+      for (int i = 0; i < lista.size(); i++) {
+        resultado[i] = lista.get(i);
+      }
+      return resultado;
+    }
+
+    private static void recorrerArbol(int[][] grafo, int nodo, boolean[] visitado, ArrayList<Integer> lista) {
+      visitado[nodo] = true;
+
+      for (int i = 0; i < grafo.length; i++) {
+        if (grafo[nodo][i] == 1 && !visitado[i]) {
+          recorrerArbol(grafo, i, visitado, lista);
+        }
+      }
+
+      lista.add(nodo); // Postorden: hijos primero, luego el nodo
     }
 
     /*
